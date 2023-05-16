@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class DeviceComponent extends VerticalLayout {
 
 	public DeviceComponent() {
+		setSpacing(false);
 
 		Select<String> deviceSelect = new Select<>();
 		deviceSelect.getStyle().set("width", "275px");

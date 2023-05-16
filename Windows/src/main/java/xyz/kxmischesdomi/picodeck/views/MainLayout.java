@@ -42,14 +42,14 @@ public class MainLayout extends AppLayout {
     }
 
     private void addHeaderContent() {
-//        DrawerToggle toggle = new DrawerToggle();
+        DrawerToggle toggle = new DrawerToggle();
 //        toggle.getElement().setAttribute("aria-label", "Menu toggle");
 
         viewTitle = new H2();
         viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
         viewTitle.getStyle().set("margin-left", "var(--lumo-space-s)");
 
-        addToNavbar(true, /*toggle,*/ viewTitle);
+         addToNavbar(true, toggle, viewTitle);
     }
 
     private void addDrawerContent() {

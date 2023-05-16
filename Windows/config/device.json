@@ -1,0 +1,24 @@
+{
+  "buttonConfigurations": {
+    "youtube": {
+      "action": "web",
+      "icon": "youtube",
+      "url": "https://youtube.com"
+    }
+  },
+  "buttonMappings": {
+    "1": {
+      "mapping": "youtube"
+    }
+  },
+  "uploads": {
+    "fallback": {
+      "speed": -1,
+      "base64": "FALLBACK"
+    },
+    "youtube": {
+      "speed": 1000,
+      "base64": "BASE64"
+    }
+  }
+}

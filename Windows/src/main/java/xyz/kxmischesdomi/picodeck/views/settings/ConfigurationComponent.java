@@ -1,13 +1,14 @@
 package xyz.kxmischesdomi.picodeck.views.settings;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.server.StreamResource;
+import org.vaadin.olli.FileDownloadWrapper;
 
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * @author KxmischesDomi | https://github.com/kxmischesdomi
@@ -16,8 +17,19 @@ import java.io.InputStream;
 public class ConfigurationComponent extends VerticalLayout {
 
 	public ConfigurationComponent() {
+		setSpacing(false);
 
 		Button exportButton = new Button("Export Configuration");
+
+		FileDownloadWrapper link = new FileDownloadWrapper(new StreamResource("device.json", () -> {
+			try {
+				return new FileInputStream("config/device.json");
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			return InputStream.nullInputStream();
+		}));
+		link.wrapComponent(exportButton);
 
 		// ---------------------------------------
 
@@ -27,8 +39,6 @@ public class ConfigurationComponent extends VerticalLayout {
 		MemoryBuffer buffer = new MemoryBuffer();
 		Upload upload = new Upload(buffer);
 		upload.setAcceptedFileTypes(".json");
-
-//		upload.setDropLabel(new Label("Drop .json config here"));
 
 		upload.addSucceededListener(event -> {
 			String fileName = event.getFileName();
@@ -43,7 +53,7 @@ public class ConfigurationComponent extends VerticalLayout {
 
 		// --------------------------------------
 
-		add(exportButton, verticalLayout);
+		add(link, verticalLayout);
 	}
 
 }
