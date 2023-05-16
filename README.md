@@ -17,6 +17,6 @@
  - Raspberry Pi Pico
  - 3.5" Touchscreen (Still testing products)
 
-## Galery
+## Gallery
 ![image](https://github.com/KxmischesDomi/Picodeck/assets/67184131/0fa9dc0e-73c2-4d9b-9473-566170816ae6)
 ![image](https://github.com/KxmischesDomi/Picodeck/assets/67184131/bb530109-80c8-45c3-8317-c2e566ab6d18)
