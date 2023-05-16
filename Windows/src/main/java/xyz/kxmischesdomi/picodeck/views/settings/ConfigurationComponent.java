@@ -44,7 +44,18 @@ public class ConfigurationComponent extends VerticalLayout {
 			String fileName = event.getFileName();
 			InputStream inputStream = buffer.getInputStream();
 
-			System.out.println(fileName);
+			try {
+				FileOutputStream outputStream = new FileOutputStream("config/device.json");
+
+				byte[] byteBuffer = new byte[inputStream.available()]; // Set buffer size based on input stream size
+
+				int bytesRead = inputStream.read(byteBuffer);
+				outputStream.write(byteBuffer, 0, bytesRead);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 		});
 
 		VerticalLayout verticalLayout = new VerticalLayout(hint, upload);
