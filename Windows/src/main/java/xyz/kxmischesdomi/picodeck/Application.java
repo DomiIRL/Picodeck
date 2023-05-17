@@ -1,5 +1,6 @@
 package xyz.kxmischesdomi.picodeck;
 
+import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.ServiceInitEvent;
@@ -7,6 +8,7 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.theme.Theme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import xyz.kxmischesdomi.picodeck.config.Config;
 
 /**
  *
@@ -28,8 +30,17 @@ public class Application implements AppShellConfigurator, VaadinServiceInitListe
 	}
 
 	@Override
-	public void serviceInit(ServiceInitEvent serviceInitEvent) {
+	public void configurePage(AppShellSettings settings) {
+		settings.addLink("shortcut icon", "icons/favicon.png");
+		settings.addFavIcon("icon", "icons/favicon.png", "192x192");
+	}
 
+	@Override
+	public void serviceInit(ServiceInitEvent serviceInitEvent) {
+		SpringApplication.getShutdownHandlers().add(() -> {
+			Config.getDeviceConfig().markDirty();
+			Config.getAppConfig().markDirty();
+		});
 	}
 
 }

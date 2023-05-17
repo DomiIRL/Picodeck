@@ -1,5 +1,6 @@
 package xyz.kxmischesdomi.picodeck.views.settings;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -16,7 +17,8 @@ import xyz.kxmischesdomi.picodeck.views.MainLayout;
 @Route(value = "settings", layout = MainLayout.class)
 public class SettingsView extends VerticalLayout {
 
-	public SettingsView() {
+	@Override
+	protected void onAttach(AttachEvent attachEvent) {
 		addCategory("Device", new DeviceComponent());
 		addCategory("Configuration", new ConfigurationComponent());
 	}

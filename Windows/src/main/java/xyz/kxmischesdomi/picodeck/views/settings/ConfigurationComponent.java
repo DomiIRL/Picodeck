@@ -1,5 +1,6 @@
 package xyz.kxmischesdomi.picodeck.views.settings;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -7,8 +8,11 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.server.StreamResource;
 import org.vaadin.olli.FileDownloadWrapper;
+import xyz.kxmischesdomi.picodeck.config.Config;
+import xyz.kxmischesdomi.picodeck.config.ConfigLoader;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author KxmischesDomi | https://github.com/kxmischesdomi
@@ -16,19 +20,13 @@ import java.io.*;
  */
 public class ConfigurationComponent extends VerticalLayout {
 
-	public ConfigurationComponent() {
+	@Override
+	protected void onAttach(AttachEvent attachEvent) {
 		setSpacing(false);
 
 		Button exportButton = new Button("Export Configuration");
 
-		FileDownloadWrapper link = new FileDownloadWrapper(new StreamResource("device.json", () -> {
-			try {
-				return new FileInputStream("config/device.json");
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-			return InputStream.nullInputStream();
-		}));
+		FileDownloadWrapper link = new FileDownloadWrapper(new StreamResource("device.json", () -> new ByteArrayInputStream(ConfigLoader.gson.toJson(Config.getDeviceConfig().getJson()).getBytes())));
 		link.wrapComponent(exportButton);
 
 		// ---------------------------------------
@@ -45,13 +43,7 @@ public class ConfigurationComponent extends VerticalLayout {
 			InputStream inputStream = buffer.getInputStream();
 
 			try {
-				FileOutputStream outputStream = new FileOutputStream("config/device.json");
-
-				byte[] byteBuffer = new byte[inputStream.available()]; // Set buffer size based on input stream size
-
-				int bytesRead = inputStream.read(byteBuffer);
-				outputStream.write(byteBuffer, 0, bytesRead);
-
+				Config.getDeviceConfig().overwriteFile(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -66,5 +58,4 @@ public class ConfigurationComponent extends VerticalLayout {
 
 		add(link, verticalLayout);
 	}
-
 }

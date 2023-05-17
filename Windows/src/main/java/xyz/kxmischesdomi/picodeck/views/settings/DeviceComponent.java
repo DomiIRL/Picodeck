@@ -1,6 +1,7 @@
 package xyz.kxmischesdomi.picodeck.views.settings;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -18,7 +19,8 @@ import java.util.stream.Collectors;
  */
 public class DeviceComponent extends VerticalLayout {
 
-	public DeviceComponent() {
+	@Override
+	protected void onAttach(AttachEvent attachEvent) {
 		setSpacing(false);
 
 		Select<String> deviceSelect = new Select<>();

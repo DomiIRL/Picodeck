@@ -1,6 +1,8 @@
 package xyz.kxmischesdomi.picodeck.views;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Svg;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.*;
@@ -20,10 +22,15 @@ import org.vaadin.lineawesome.LineAwesomeIcon;
 import xyz.kxmischesdomi.picodeck.components.appnav.AppNav;
 import xyz.kxmischesdomi.picodeck.components.appnav.AppNavItem;
 import xyz.kxmischesdomi.picodeck.views.buttons.ButtonsView;
+import xyz.kxmischesdomi.picodeck.views.mappings.MappingsView;
 import xyz.kxmischesdomi.picodeck.views.modules.ModulesView;
 import xyz.kxmischesdomi.picodeck.views.settings.SettingsView;
 import xyz.kxmischesdomi.picodeck.views.splash.SplashView;
 import xyz.kxmischesdomi.picodeck.views.uploads.UploadsView;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 /**
  * @author KxmischesDomi | https://github.com/kxmischesdomi
@@ -41,6 +48,11 @@ public class MainLayout extends AppLayout {
         addHeaderContent();
     }
 
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+
+    }
+
     private void addHeaderContent() {
         DrawerToggle toggle = new DrawerToggle();
 //        toggle.getElement().setAttribute("aria-label", "Menu toggle");
@@ -49,12 +61,15 @@ public class MainLayout extends AppLayout {
         viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
         viewTitle.getStyle().set("margin-left", "var(--lumo-space-s)");
 
-         addToNavbar(true, toggle, viewTitle);
+        addToNavbar(true, toggle, viewTitle);
     }
 
     private void addDrawerContent() {
+
+
         H1 appName = new H1("Picodeck");
         appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE, LumoUtility.TextAlignment.CENTER, LumoUtility.Padding.MEDIUM);
+
         Header header = new Header(appName);
 
         Scroller scroller = new Scroller(createNavigation());
@@ -65,10 +80,11 @@ public class MainLayout extends AppLayout {
     private AppNav createNavigation() {
         AppNav nav = new AppNav();
 
+        nav.addItem(new AppNavItem("Mappings", MappingsView.class, createIcon(VaadinIcon.SITEMAP.create())));
         nav.addItem(new AppNavItem("Buttons", ButtonsView.class, createIcon(VaadinIcon.GRID_BIG_O.create())));
+        nav.addItem(new AppNavItem("Uploads", UploadsView.class, createIcon(VaadinIcon.UPLOAD.create())));
         nav.addItem(new AppNavItem("Modules", ModulesView.class, createIcon(VaadinIcon.CUBES.create())));
         nav.addItem(new AppNavItem("Splash", SplashView.class, createIcon(VaadinIcon.PAINT_ROLL.create())));
-        nav.addItem(new AppNavItem("Uploads", UploadsView.class, createIcon(VaadinIcon.UPLOAD.create())));
         nav.addItem(new AppNavItem("Settings", SettingsView.class, createIcon(VaadinIcon.COGS.create())));
 
         return nav;

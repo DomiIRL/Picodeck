@@ -1,10 +1,13 @@
 package xyz.kxmischesdomi.picodeck.views.uploads;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.BoxSizing;
@@ -16,6 +19,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.apache.commons.io.IOUtils;
+import xyz.kxmischesdomi.picodeck.config.Config;
+import xyz.kxmischesdomi.picodeck.config.Uploads;
 import xyz.kxmischesdomi.picodeck.views.MainLayout;
 
 import javax.imageio.ImageIO;
@@ -26,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.Map;
-import java.util.TreeMap;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 
@@ -38,10 +42,10 @@ import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 @Route(value = "uploads", layout = MainLayout.class)
 public class UploadsView extends VerticalLayout {
 
-	public static Map<String, String> images = new TreeMap<>();
+	private FlexLayout imageGrid;
 
-	public UploadsView() {
-
+	@Override
+	protected void onAttach(AttachEvent attachEvent) {
 		Paragraph hint = new Paragraph("Accepted file formats: PNG, JPEG, GIF, WEBP (.png, .jpg, .jpeg, .gif, .webp)");
 		hint.getStyle().set("color", "var(--lumo-secondary-text-color)");
 
@@ -49,9 +53,7 @@ public class UploadsView extends VerticalLayout {
 		Upload upload = new Upload(buffer);
 		upload.setAcceptedFileTypes("image/png", "image/jpeg", "image/gif", "image/webp");
 
-
-
-		FlexLayout imageGrid = new FlexLayout();
+		imageGrid = new FlexLayout();
 		imageGrid.setFlexWrap(FlexLayout.FlexWrap.WRAP);
 		imageGrid.getStyle().set("gap", "var(--lumo-space-xl)");
 
@@ -61,7 +63,7 @@ public class UploadsView extends VerticalLayout {
 
 			fileName = fileName.substring(0, fileName.lastIndexOf('.'));
 
-			if (images.containsKey(fileName)) {
+			if (Uploads.getUploads().has(fileName)) {
 				Notification notification = Notification.show("Image name already exists. Please rename");
 				notification.setPosition(Notification.Position.TOP_CENTER);
 				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -78,10 +80,13 @@ public class UploadsView extends VerticalLayout {
 					fileName = fileName.substring(0, 20);
 				}
 
+				JsonObject newUploadMember = new JsonObject();
+				newUploadMember.addProperty("base64", encodedString);
+				Uploads.getUploads().add(fileName, newUploadMember);
 
-				images.put(fileName, encodedString);
 
-				imageGrid.add(createImageCell(fileName, encodedString));
+				// Make sure everything is alright
+				reRenderImageGrid();
 
 			} catch (IOException exception) {
 				exception.printStackTrace();
@@ -96,9 +101,16 @@ public class UploadsView extends VerticalLayout {
 
 		add(uploadLayout, imageGrid);
 
-		images.forEach((s, s2) -> {
-			imageGrid.add(createImageCell(s, s2));
-		});
+		reRenderImageGrid();
+
+	}
+
+	private void reRenderImageGrid() {
+		Config.getDeviceConfig().markDirty();
+		imageGrid.removeAll();
+		for (Map.Entry<String, JsonElement> entry : Uploads.getUploads().entrySet()) {
+			imageGrid.add(createImageCell(entry.getKey(), entry.getValue().getAsJsonObject().get("base64").getAsString()));
+		}
 	}
 
 	private Component createImageCell(String name, String base64) {
@@ -110,16 +122,32 @@ public class UploadsView extends VerticalLayout {
 				.set("background-size", "contain")
 				.set("background-repeat", "no-repeat")
 				.set("background-position", "center");
-		imageWrapper.setWidth("200px");
-		imageWrapper.setHeight("200px");
+		imageWrapper.setWidth("190px");
+		imageWrapper.setHeight("190px");
+		imageWrapper.addClassNames(LumoUtility.BorderRadius.MEDIUM, LumoUtility.Margin.SMALL);
 
-		Label imageTitle = new Label(name);
-		imageTitle.addClassNames(LumoUtility.TextAlignment.CENTER);
+		Paragraph imageTitle = new Paragraph(name);
+		imageTitle.addClassNames(LumoUtility.TextAlignment.CENTER, LumoUtility.Margin.NONE, LumoUtility.FontSize.XLARGE);
 		imageTitle.setWidth("100%");
 
-		VerticalLayout cell = new VerticalLayout(imageWrapper, imageTitle);
-		cell.setWidth("auto");
-		cell.setHeight("auto");
+		Button delete = new Button();
+		Icon icon = VaadinIcon.CLOSE.create();
+		icon.setColor("white");
+		delete.setIcon(icon);
+		delete.addClassNames(LumoUtility.Position.ABSOLUTE, LumoUtility.Background.ERROR);
+		delete.setWidth("35px");
+		delete.setHeight("35px");
+		delete.getStyle().set("right", "-5px").set("top", "-5px").set("border-radius", "100%");
+
+		delete.addClickListener(buttonClickEvent -> {
+			Uploads.getUploads().remove(name);
+			reRenderImageGrid();
+		});
+
+		VerticalLayout cell = new VerticalLayout(imageWrapper, imageTitle, delete);
+		cell.setWidth("250px");
+		cell.setHeight("300px");
+		cell.addClassNames(LumoUtility.Position.RELATIVE);
 
 		cell.setBoxSizing(BoxSizing.BORDER_BOX);
 		cell.addClassNames(LumoUtility.Width.LARGE ,LumoUtility.Background.CONTRAST_10, LumoUtility.BorderRadius.LARGE, LumoUtility.AlignItems.CENTER, LumoUtility.Padding.MEDIUM);
@@ -150,6 +178,5 @@ public class UploadsView extends VerticalLayout {
 		}
 
 	}
-
 
 }

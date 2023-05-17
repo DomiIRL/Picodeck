@@ -1,8 +1,13 @@
 package xyz.kxmischesdomi.picodeck.views.buttons;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -10,7 +15,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import xyz.kxmischesdomi.picodeck.config.Buttons;
+import xyz.kxmischesdomi.picodeck.config.Config;
+import xyz.kxmischesdomi.picodeck.config.Uploads;
 import xyz.kxmischesdomi.picodeck.views.MainLayout;
+
+import java.util.Map;
 
 /**
  * @author KxmischesDomi | https://github.com/kxmischesdomi
@@ -20,49 +30,58 @@ import xyz.kxmischesdomi.picodeck.views.MainLayout;
 @Route(value = "buttons", layout = MainLayout.class)
 public class ButtonsView extends VerticalLayout {
 
-	private static final int columns = 4, rows = 2;
+	private FlexLayout buttonsLayout;
 
-	public ButtonsView() {
+	@Override
+	protected void onAttach(AttachEvent attachEvent) {
+		buttonsLayout = new FlexLayout();
+		buttonsLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+		buttonsLayout.addClassNames(LumoUtility.Gap.LARGE);
 
-		FlexLayout grids = new FlexLayout();
-		grids.setFlexWrap(FlexLayout.FlexWrap.WRAP);
-		add(grids);
+		HorizontalLayout controls = new HorizontalLayout();
 
-		for (int page = 0; page < 10; page++) {
-			Component grid = createButtonsGridForPage(page);
-			grids.add(grid);
+		Button button = new Button("New button");
+		controls.add(button);
+
+		add(controls, buttonsLayout);
+
+		for (Map.Entry<String, JsonElement> entry : Buttons.getButtons().entrySet()) {
+			String name = entry.getKey();
+			JsonObject data = entry.getValue().getAsJsonObject();
+			String icon = data.get("icon").getAsString();
+			String src = Uploads.getUploadAsSrc(icon);
+			renderButtonCell(name, src);
 		}
 
 	}
 
-	private Component createButtonsGridForPage(int pageIndex) {
-		H2 gridTitle = new H2(String.format("Page %s", pageIndex + 1));
+	private void renderButtonCell(String name, String src) {
 
-		VerticalLayout verticalLayout = new VerticalLayout(gridTitle);
-		verticalLayout.setWidth("auto");
+		VerticalLayout layout = new VerticalLayout();
+		layout.setSpacing(false);
+		layout.setHeight("200px");
+		layout.setWidth("200px");
 
-		for (int y = 0; y < 2; y++) {
-			HorizontalLayout horizontalLayout = new HorizontalLayout();
-			verticalLayout.add(horizontalLayout);
+		Button image = new Button();
+		image.setWidthFull();
+		image.setHeightFull();
+		image.getStyle()
+				.set("background-image", String.format("url('%s')", src))
+				.set("background-size", "cover")
+				.set("background-position", "center")
+		;
 
-			for (int x = 0; x < 4; x++) {
-				Button button = new Button();
+		image.addClickListener(event -> {
+			// TODO: Open edit page
+		});
 
-				int finalX = x;
-				int finalY = y + (pageIndex * rows);
-				button.addClickListener(buttonClickEvent -> {
-					int index = (finalY * columns + finalX);
-					Notification.show(String.valueOf(index));
-				});
+		Paragraph buttonTitle = new Paragraph(name);
+		buttonTitle.addClassNames(LumoUtility.TextAlignment.CENTER, LumoUtility.Margin.NONE, LumoUtility.FontSize.XLARGE);
+		buttonTitle.setWidth("100%");
 
-				String size = "5rem";
-				button.addClassNames(LumoUtility.BoxSizing.BORDER, LumoUtility.MinWidth.NONE, LumoUtility.MinHeight.NONE, LumoUtility.Margin.NONE);
-				button.getStyle().set("width", size).set("height", size);
-				horizontalLayout.add(button);
-			}
+		layout.add(image, buttonTitle);
+		buttonsLayout.add(layout);
 
-		}
-		return verticalLayout;
 	}
 
 }
