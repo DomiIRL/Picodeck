@@ -65,11 +65,12 @@ public class ButtonsView extends VerticalLayout {
 		Button image = new Button();
 		image.setWidthFull();
 		image.setHeightFull();
+		String source = String.format("url('%s')", src);
+		System.out.println(source);
 		image.getStyle()
-				.set("background-image", String.format("url('%s')", src))
+				.set("background-image", source)
 				.set("background-size", "cover")
-				.set("background-position", "center")
-		;
+				.set("background-position", "center");
 
 		image.addClickListener(event -> {
 			// TODO: Open edit page

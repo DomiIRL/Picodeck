@@ -8,10 +8,21 @@ import com.google.gson.JsonObject;
  */
 public class Buttons {
 
+	public static record ConfiguredButton(String name, Uploads.Upload icon) { }
+
 	private static final JsonObject buttons;
 
 	public static JsonObject getButtons() {
 		return buttons;
+	}
+
+	public static ConfiguredButton getButton(String name) {
+		if (getButtons().has(name)) {
+			JsonObject object = getButtons().getAsJsonObject(name);
+			return new ConfiguredButton(name, Uploads.getUpload(object.get("icon").getAsString()));
+		}
+
+		return null;
 	}
 
 	static {

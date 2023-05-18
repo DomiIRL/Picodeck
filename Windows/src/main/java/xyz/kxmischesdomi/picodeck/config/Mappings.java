@@ -10,8 +10,15 @@ public class Mappings {
 
 	private static final JsonObject buttons;
 
-	public static JsonObject getButtons() {
+	public static JsonObject getMappings() {
 		return buttons;
+	}
+
+	public static Buttons.ConfiguredButton getMapping(int index) {
+		if (getMappings().has(String.valueOf(index))) {
+			return Buttons.getButton(getMappings().get(String.valueOf(index)).getAsString());
+		}
+		return null;
 	}
 
 	static {

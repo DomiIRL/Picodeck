@@ -2,23 +2,17 @@ package xyz.kxmischesdomi.picodeck.views;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Svg;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
-import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.html.Footer;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
-import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-import org.vaadin.lineawesome.LineAwesomeIcon;
 import xyz.kxmischesdomi.picodeck.components.appnav.AppNav;
 import xyz.kxmischesdomi.picodeck.components.appnav.AppNavItem;
 import xyz.kxmischesdomi.picodeck.views.buttons.ButtonsView;
@@ -27,10 +21,6 @@ import xyz.kxmischesdomi.picodeck.views.modules.ModulesView;
 import xyz.kxmischesdomi.picodeck.views.settings.SettingsView;
 import xyz.kxmischesdomi.picodeck.views.splash.SplashView;
 import xyz.kxmischesdomi.picodeck.views.uploads.UploadsView;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
 /**
  * @author KxmischesDomi | https://github.com/kxmischesdomi
@@ -46,6 +36,8 @@ public class MainLayout extends AppLayout {
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
         addHeaderContent();
+
+        setContent(new MappingsView());
     }
 
     @Override
@@ -65,7 +57,6 @@ public class MainLayout extends AppLayout {
     }
 
     private void addDrawerContent() {
-
 
         H1 appName = new H1("Picodeck");
         appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE, LumoUtility.TextAlignment.CENTER, LumoUtility.Padding.MEDIUM);

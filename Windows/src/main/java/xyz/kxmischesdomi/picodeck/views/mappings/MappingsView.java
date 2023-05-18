@@ -2,7 +2,7 @@ package xyz.kxmischesdomi.picodeck.views.mappings;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -10,19 +10,19 @@ import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DropEffect;
 import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.orderedlayout.*;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import xyz.kxmischesdomi.picodeck.config.Buttons;
+import xyz.kxmischesdomi.picodeck.config.Config;
+import xyz.kxmischesdomi.picodeck.config.Mappings;
+import xyz.kxmischesdomi.picodeck.config.Uploads;
 import xyz.kxmischesdomi.picodeck.views.MainLayout;
 
-import java.util.Random;
+import javax.annotation.Nullable;
 
 /**
  * @author KxmischesDomi | https://github.com/kxmischesdomi
@@ -30,39 +30,87 @@ import java.util.Random;
  */
 @PageTitle("Mappings")
 @Route(value = "mappings", layout = MainLayout.class)
-public class MappingsView extends VerticalLayout {
+public class MappingsView extends SplitLayout {
 
 	private static final int columns = 4, rows = 2;
 
+	FlexLayout grids = new FlexLayout();
+
 	private final Dialog dialog = new Dialog();
-	private final ComboBox<String> mappingSelect = new ComboBox<>("Button");
-	private final Button saveButton = new Button("Save");
-	private final Button clearButton = new Button("Clear");
 
-	@Override
-	protected void onAttach(AttachEvent attachEvent) {
+	int gridsToRender;
 
-		dialog.setHeaderTitle("Edit Mapping");
-		mappingSelect.setWidth("300px");
-		mappingSelect.setLabel("Select button");
-		Button discardButton = new Button("Discard");
-		discardButton.addClickListener(event -> dialog.close());
-		HorizontalLayout horizontalLayout = new HorizontalLayout(saveButton, clearButton, discardButton);
-		horizontalLayout.setJustifyContentMode(JustifyContentMode.CENTER);
-		horizontalLayout.setFlexGrow(1, saveButton, discardButton, clearButton);
-		dialog.add(mappingSelect, horizontalLayout);
+	public MappingsView() {
+		setOrientation(Orientation.HORIZONTAL);
+		setSplitterPosition(70);
+		setWidth("100%");
+		setHeight("100%");
 
-		add(dialog);
+		int highestIndex = -1;
+		for (String s : Mappings.getMappings().keySet()) {
 
-		FlexLayout grids = new FlexLayout();
+			try {
+				int i = Integer.parseInt(s);
+				if (i > highestIndex) {
+					highestIndex = i;
+				}
+			} catch (Exception exception) { }
+
+		}
+		gridsToRender = (int) Math.max(3, Math.ceil((double) highestIndex /  (columns * rows)));
+
+
+		VerticalLayout view = createMappingsView();
+
+		Scroller scroller = new Scroller(view);
+		scroller.setHeight("100%");
+		addToPrimary(scroller);
+
+		Scroller scroller1 = new Scroller(createButtonsView());
+		scroller1.setHeight("100%");
+		addToSecondary(scroller1);
+
+	}
+
+	private VerticalLayout createMappingsView() {
+
+		Button button = new Button("New Page");
+		button.addClickListener(event -> {
+			gridsToRender++;
+			renderGrids();
+		});
+
 		grids.setFlexWrap(FlexLayout.FlexWrap.WRAP);
-		add(grids);
 
-		for (int page = 0; page < 10; page++) {
+		renderGrids();
+
+		return new VerticalLayout(button, grids, dialog);
+	}
+
+	private Component createButtonsView() {
+
+		Label title = new Label("Drag and Drop from here");
+
+		FlexLayout layout = new FlexLayout();
+		layout.setAlignContent(FlexLayout.ContentAlignment.START);
+		layout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+		layout.addClassNames(LumoUtility.Gap.SMALL);
+		layout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+
+		for (String buttonName : Buttons.getButtons().keySet()) {
+			Button button = createButton(-1, Buttons.getButton(buttonName));
+			layout.add(button);
+		}
+
+		return new VerticalLayout(title, layout);
+	}
+
+	private void renderGrids() {
+		grids.removeAll();
+		for (int page = 0; page < gridsToRender; page++) {
 			Component grid = createButtonsGridForPage(page);
 			grids.add(grid);
 		}
-
 	}
 
 	private Component createButtonsGridForPage(int pageIndex) {
@@ -78,10 +126,8 @@ public class MappingsView extends VerticalLayout {
 			for (int x = 0; x < 4; x++) {
 				int index = ((y + (pageIndex * rows)) * columns + x);
 
-				Button button = new Button(String.valueOf(index));
-
-				DragSource<Button> buttonDragSource = DragSource.create(button);
-				buttonDragSource.setDragData(index);
+				Button button = createButton(index, Mappings.getMapping(index));
+				button.getElement().setAttribute("mapping", "");
 
 				DropTarget<Button> buttonDropTarget = DropTarget.create(button);
 				buttonDropTarget.setDropEffect(DropEffect.MOVE);
@@ -90,26 +136,25 @@ public class MappingsView extends VerticalLayout {
 
 					buttonDropEvent.getDragData().ifPresent(data -> {
 
-						int from = (int) data;
+						DragButton dragButton = (DragButton) data;
 						int to = index;
 
-						buttonDropEvent.getDragSourceComponent().ifPresent(component -> {
-							Button fromComponent = (Button) component;
-						});
+						if (dragButton.index != -1) {
+							Mappings.getMappings().remove(String.valueOf(dragButton.index));
+						}
 
+						Mappings.getMappings().addProperty(String.valueOf(to), dragButton.configuredButton().name());
+						Config.getDeviceConfig().markDirty();
+						renderGrids();
 					});
 
 				});
 
 				button.addClickListener(buttonClickEvent -> {
-					fillDialog(index);
+					setupDialog(index);
 					dialog.open();
-
 				});
 
-				String size = "5rem";
-				button.addClassNames(LumoUtility.BoxSizing.BORDER, LumoUtility.MinWidth.NONE, LumoUtility.MinHeight.NONE, LumoUtility.Margin.NONE);
-				button.getStyle().set("width", size).set("height", size);
 				horizontalLayout.add(button);
 			}
 
@@ -117,19 +162,80 @@ public class MappingsView extends VerticalLayout {
 		return verticalLayout;
 	}
 
-	private void fillDialog(int mappingIndex) {
-		String currentButton = "youtube";
+	private static record DragButton(int index, Buttons.ConfiguredButton configuredButton) {}
+
+	private Button createButton(int index, @Nullable Buttons.ConfiguredButton configuredButton) {
+		Button button = new Button();
+
+		if (configuredButton != null) {
+			Uploads.Upload icon = configuredButton.icon();
+
+			if (icon != null) {
+				button.setSizeFull();
+				button.getStyle()
+						.set("background-image", icon.base64AsSrc())
+						.set("background-size", "cover")
+						.set("background-position", "center");
+			}
+		}
+
+		DragSource<Button> buttonDragSource = DragSource.create(button);
+		buttonDragSource.setDragData(new DragButton(index, configuredButton));
+
+		String size = "5rem";
+		button.addClassNames(LumoUtility.BoxSizing.BORDER, LumoUtility.MinWidth.NONE, LumoUtility.MinHeight.NONE, LumoUtility.Margin.NONE, LumoUtility.BorderRadius.LARGE);
+		button.getStyle().set("width", size).set("height", size);
+
+		return button;
+	}
+
+	private void setupDialog(int mappingIndex) {
+		dialog.removeAll();
+
+		Buttons.ConfiguredButton currentButton = Mappings.getMapping(mappingIndex);
+
+		ComboBox<String> mappingSelect = new ComboBox<>("Button");
+
+		Button saveButton = new Button("Save");
+		Button clearButton = new Button("Clear");
+
+		dialog.setHeaderTitle("Edit Mapping");
+		mappingSelect.setWidth("300px");
+		mappingSelect.setLabel("Select button");
+		Button discardButton = new Button("Discard");
+		discardButton.addClickListener(event -> dialog.close());
+		HorizontalLayout horizontalLayout = new HorizontalLayout(saveButton, clearButton, discardButton);
+		horizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+		horizontalLayout.setFlexGrow(1, saveButton, discardButton, clearButton);
+		dialog.add(mappingSelect, horizontalLayout);
 
 		mappingSelect.setItems(Buttons.getButtons().keySet());
-//		mappingSelect.setItemLabelGenerator(s -> );
-		mappingSelect.setValue(currentButton);
+
+		if (currentButton != null) {
+			mappingSelect.setValue(currentButton.name());
+		}
 
 		saveButton.addClickListener(event -> {
-			// TODO: SAVE CHANGES
+			String newValue = mappingSelect.getValue();
+
+			Buttons.ConfiguredButton oldMapping = Mappings.getMapping(mappingIndex);
+			if (oldMapping == null || !oldMapping.name().equals(newValue)) {
+				Buttons.ConfiguredButton button = Buttons.getButton(newValue);
+				if (button != null) {
+					Mappings.getMappings().addProperty(String.valueOf(mappingIndex), newValue);
+					Config.getDeviceConfig().markDirty();
+				}
+				renderGrids();
+			}
+
+			dialog.close();
 		});
 
 		clearButton.addClickListener(event -> {
-			// TODO: DELETE MAPPING
+			Mappings.getMappings().remove(String.valueOf(mappingIndex));
+			Config.getDeviceConfig().markDirty();
+			renderGrids();
+			dialog.close();
 		});
 
 	}
