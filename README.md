@@ -18,5 +18,6 @@
  - 3.5" Touchscreen (Still testing products)
 
 ## Gallery
-![image](https://github.com/KxmischesDomi/Picodeck/assets/67184131/0fa9dc0e-73c2-4d9b-9473-566170816ae6)
+![image](https://github.com/KxmischesDomi/Picodeck/assets/67184131/44cec607-4fd0-481a-909a-db3ca6e55836)
 ![image](https://github.com/KxmischesDomi/Picodeck/assets/67184131/bb530109-80c8-45c3-8317-c2e566ab6d18)
+![image](https://github.com/KxmischesDomi/Picodeck/assets/67184131/667afc02-e4a7-4281-89cd-5242836310ba)
