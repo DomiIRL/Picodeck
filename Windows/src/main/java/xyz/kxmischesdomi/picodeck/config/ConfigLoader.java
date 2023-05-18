@@ -16,8 +16,8 @@ public class ConfigLoader {
 
 	public static final Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).setPrettyPrinting().create();
 
-	private volatile File file;
-	private volatile JsonObject jsonObject = new JsonObject();
+	private File file;
+	private JsonObject jsonObject = new JsonObject();
 
 	public ConfigLoader(File file) {
 		this.file = file;
