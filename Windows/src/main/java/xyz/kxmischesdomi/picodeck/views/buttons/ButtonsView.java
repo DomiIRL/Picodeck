@@ -32,6 +32,8 @@ public class ButtonsView extends VerticalLayout {
 
 	private FlexLayout buttonsLayout;
 
+	private EditButtonDialog dialog = new EditButtonDialog(this::renderButtons);
+
 	@Override
 	protected void onAttach(AttachEvent attachEvent) {
 		buttonsLayout = new FlexLayout();
@@ -41,21 +43,28 @@ public class ButtonsView extends VerticalLayout {
 		HorizontalLayout controls = new HorizontalLayout();
 
 		Button button = new Button("New button");
+		button.addClickListener(event -> {
+			dialog.init(null);
+			dialog.open();
+		});
 		controls.add(button);
 
 		add(controls, buttonsLayout);
 
-		for (Map.Entry<String, JsonElement> entry : Buttons.getButtons().entrySet()) {
-			String name = entry.getKey();
-			JsonObject data = entry.getValue().getAsJsonObject();
-			String icon = data.get("icon").getAsString();
-			String src = Uploads.getUploadAsSrc(icon);
-			renderButtonCell(name, src);
-		}
-
+		renderButtons();
 	}
 
-	private void renderButtonCell(String name, String src) {
+	private void renderButtons() {
+		buttonsLayout.removeAll();
+		for (Map.Entry<String, JsonElement> entry : Buttons.getButtons().entrySet()) {
+			Buttons.ConfiguredButton configuredButton = Buttons.getButton(entry.getKey());
+			if (configuredButton != null) {
+				renderButtonCell(configuredButton);
+			}
+		}
+	}
+
+	private void renderButtonCell(Buttons.ConfiguredButton configuredButton) {
 
 		VerticalLayout layout = new VerticalLayout();
 		layout.setSpacing(false);
@@ -65,18 +74,17 @@ public class ButtonsView extends VerticalLayout {
 		Button image = new Button();
 		image.setWidthFull();
 		image.setHeightFull();
-		String source = String.format("url('%s')", src);
-		System.out.println(source);
 		image.getStyle()
-				.set("background-image", source)
+				.set("background-image", configuredButton.icon().base64AsSrc())
 				.set("background-size", "cover")
 				.set("background-position", "center");
 
 		image.addClickListener(event -> {
-			// TODO: Open edit page
+			dialog.init(configuredButton);
+			dialog.open();
 		});
 
-		Paragraph buttonTitle = new Paragraph(name);
+		Paragraph buttonTitle = new Paragraph(configuredButton.name());
 		buttonTitle.addClassNames(LumoUtility.TextAlignment.CENTER, LumoUtility.Margin.NONE, LumoUtility.FontSize.XLARGE);
 		buttonTitle.setWidth("100%");
 

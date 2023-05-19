@@ -10,6 +10,7 @@ import com.vaadin.flow.component.select.Select;
 import xyz.kxmischesdomi.picodeck.serial.SerialConnection;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -24,15 +25,15 @@ public class DeviceComponent extends VerticalLayout {
 		setSpacing(false);
 
 		Select<String> deviceSelect = new Select<>();
+		deviceSelect.setEmptySelectionAllowed(true);
 		deviceSelect.getStyle().set("width", "275px");
 		deviceSelect.setLabel("Select port");
 		setItems(deviceSelect);
 
-		deviceSelect.setItemLabelGenerator(s -> getPortByName(s).getDescriptivePortName());
-
-		if (SerialConnection.getCurrentConnection() != null) {
-			deviceSelect.setValue(SerialConnection.getCurrentConnection().getSystemPortName());
-		}
+		deviceSelect.setItemLabelGenerator(s -> {
+			if (s == null) return "";
+			return getPortByName(s).getDescriptivePortName();
+		});
 
 		deviceSelect.addValueChangeListener(valueChangeEvent -> {
 			SerialConnection.setCurrentConnection(getPortByName(valueChangeEvent.getValue()));
@@ -45,8 +46,8 @@ public class DeviceComponent extends VerticalLayout {
 			String name = "Handshake failed";
 			NotificationVariant variant = NotificationVariant.LUMO_ERROR;
 
-			if (new Random().nextBoolean()) {
-				name = "Handshake sucessful";
+			if (deviceSelect.getValue() != null) {
+				name = "Handshake successful";
 
 				variant = NotificationVariant.LUMO_SUCCESS;
 			}
@@ -70,7 +71,14 @@ public class DeviceComponent extends VerticalLayout {
 	}
 
 	private void setItems(Select<String> select) {
-		select.setItems(Arrays.stream(SerialPort.getCommPorts()).map(SerialPort::getSystemPortName).collect(Collectors.toList()));
+		List<String> items = Arrays.stream(SerialPort.getCommPorts()).map(SerialPort::getSystemPortName).collect(Collectors.toList());
+		select.setItems(items);
+
+		SerialPort connection = SerialConnection.getCurrentConnection();
+		if (connection != null) {
+			select.setValue(SerialConnection.getCurrentConnection().getSystemPortName());
+		}
+
 	}
 
 }

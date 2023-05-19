@@ -1,6 +1,7 @@
 package xyz.kxmischesdomi.picodeck.serial;
 
 import com.fazecast.jSerialComm.SerialPort;
+import xyz.kxmischesdomi.picodeck.config.Config;
 
 /**
  * @author KxmischesDomi | https://github.com/kxmischesdomi
@@ -23,6 +24,9 @@ public class SerialConnection {
 			currentConnection.setBaudRate(BAUDRATE);
 		}
 		SerialConnection.currentConnection = currentConnection;
+
+		Config.getAppConfig().getJson().addProperty("port", currentConnection.getSystemPortName());
+		Config.getAppConfig().markDirty();
 	}
 
 	public static SerialPort getCurrentConnection() {
@@ -55,6 +59,10 @@ public class SerialConnection {
 
 			}
 		}).start();
+	}
+
+	public static void loadConnectionByName(String name) {
+		setCurrentConnection(SerialPort.getCommPort(name));
 	}
 
 }

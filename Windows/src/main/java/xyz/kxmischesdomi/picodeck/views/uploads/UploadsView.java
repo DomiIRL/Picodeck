@@ -29,6 +29,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.Base64;
 import java.util.Map;
 
@@ -83,6 +85,7 @@ public class UploadsView extends VerticalLayout {
 				JsonObject newUploadMember = new JsonObject();
 				newUploadMember.addProperty("base64", encodedString);
 				Uploads.getUploads().add(fileName, newUploadMember);
+				Config.getDeviceConfig().markDirty();
 
 
 				// Make sure everything is alright
@@ -126,9 +129,17 @@ public class UploadsView extends VerticalLayout {
 		imageWrapper.setHeight("190px");
 		imageWrapper.addClassNames(LumoUtility.BorderRadius.MEDIUM, LumoUtility.Margin.SMALL);
 
+
+		Label fileSize = new Label(humanReadableByteCountBin(base64.getBytes().length));
+		fileSize.addClassNames(LumoUtility.TextAlignment.CENTER, LumoUtility.Margin.NONE, LumoUtility.FontSize.SMALL);
+		fileSize.setWidth("100%");
+
 		Paragraph imageTitle = new Paragraph(name);
 		imageTitle.addClassNames(LumoUtility.TextAlignment.CENTER, LumoUtility.Margin.NONE, LumoUtility.FontSize.XLARGE);
 		imageTitle.setWidth("100%");
+		VerticalLayout textLayout = new VerticalLayout(fileSize, imageTitle);
+		textLayout.setSpacing(false);
+		textLayout.setPadding(false);
 
 		Button delete = new Button();
 		Icon icon = VaadinIcon.CLOSE.create();
@@ -144,7 +155,7 @@ public class UploadsView extends VerticalLayout {
 			reRenderImageGrid();
 		});
 
-		VerticalLayout cell = new VerticalLayout(imageWrapper, imageTitle, delete);
+		VerticalLayout cell = new VerticalLayout(imageWrapper, textLayout, delete);
 		cell.setWidth("250px");
 		cell.setHeight("300px");
 		cell.addClassNames(LumoUtility.Position.RELATIVE);
@@ -177,6 +188,21 @@ public class UploadsView extends VerticalLayout {
 			return imageData;
 		}
 
+	}
+
+	public static String humanReadableByteCountBin(long bytes) {
+		long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
+		if (absB < 1024) {
+			return bytes + " B";
+		}
+		long value = absB;
+		CharacterIterator ci = new StringCharacterIterator("KMGTPE");
+		for (int i = 40; i >= 0 && absB > 0xfffccccccccccccL >> i; i -= 10) {
+			value >>= 10;
+			ci.next();
+		}
+		value *= Long.signum(bytes);
+		return String.format("%.1f %ciB", value / 1024.0, ci.current());
 	}
 
 }

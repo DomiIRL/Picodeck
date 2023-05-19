@@ -16,6 +16,9 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import xyz.kxmischesdomi.picodeck.components.ErrorButton;
+import xyz.kxmischesdomi.picodeck.components.NeutralButton;
+import xyz.kxmischesdomi.picodeck.components.SuccessButton;
 import xyz.kxmischesdomi.picodeck.config.Buttons;
 import xyz.kxmischesdomi.picodeck.config.Config;
 import xyz.kxmischesdomi.picodeck.config.Mappings;
@@ -191,30 +194,20 @@ public class MappingsView extends SplitLayout {
 
 	private void setupDialog(int mappingIndex) {
 		dialog.removeAll();
+		dialog.setHeaderTitle("Edit Mapping");
 
 		Buttons.ConfiguredButton currentButton = Mappings.getMapping(mappingIndex);
 
 		ComboBox<String> mappingSelect = new ComboBox<>("Button");
-
-		Button saveButton = new Button("Save");
-		Button clearButton = new Button("Clear");
-
-		dialog.setHeaderTitle("Edit Mapping");
+		mappingSelect.setRequired(true);
 		mappingSelect.setWidth("300px");
 		mappingSelect.setLabel("Select button");
-		Button discardButton = new Button("Discard");
-		discardButton.addClickListener(event -> dialog.close());
-		HorizontalLayout horizontalLayout = new HorizontalLayout(saveButton, clearButton, discardButton);
-		horizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-		horizontalLayout.setFlexGrow(1, saveButton, discardButton, clearButton);
-		dialog.add(mappingSelect, horizontalLayout);
-
 		mappingSelect.setItems(Buttons.getButtons().keySet());
-
 		if (currentButton != null) {
 			mappingSelect.setValue(currentButton.name());
 		}
 
+		Button saveButton = new SuccessButton("Save");
 		saveButton.addClickListener(event -> {
 			String newValue = mappingSelect.getValue();
 
@@ -230,13 +223,21 @@ public class MappingsView extends SplitLayout {
 
 			dialog.close();
 		});
-
+		Button clearButton = new ErrorButton("Clear");
 		clearButton.addClickListener(event -> {
 			Mappings.getMappings().remove(String.valueOf(mappingIndex));
 			Config.getDeviceConfig().markDirty();
 			renderGrids();
 			dialog.close();
 		});
+		Button discardButton = new NeutralButton("Discard");
+		discardButton.addClickListener(event -> dialog.close());
+
+		HorizontalLayout horizontalLayout = new HorizontalLayout(saveButton, discardButton, clearButton);
+		horizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+		horizontalLayout.setFlexGrow(1, saveButton, discardButton, clearButton);
+
+		dialog.add(mappingSelect, horizontalLayout);
 
 	}
 

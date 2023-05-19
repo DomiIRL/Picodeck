@@ -22,11 +22,6 @@ public class Uploads {
 		return new Upload(name, getUploadAsBase64(name));
 	}
 
-	@Deprecated
-	public static String getUploadAsSrc(String name) {
-		return String.format("data:image/png;base64,%s", getUploadAsBase64(name));
-	}
-
 	public static String getUploadAsBase64(String name) {
 		JsonObject data = uploads.getAsJsonObject(name);
 		if (data == null) return "";

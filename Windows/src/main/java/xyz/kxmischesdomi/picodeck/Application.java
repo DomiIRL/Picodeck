@@ -1,5 +1,6 @@
 package xyz.kxmischesdomi.picodeck;
 
+import com.google.gson.JsonElement;
 import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -9,6 +10,7 @@ import com.vaadin.flow.theme.Theme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import xyz.kxmischesdomi.picodeck.config.Config;
+import xyz.kxmischesdomi.picodeck.serial.SerialConnection;
 
 /**
  *
@@ -37,6 +39,14 @@ public class Application implements AppShellConfigurator, VaadinServiceInitListe
 
 	@Override
 	public void serviceInit(ServiceInitEvent serviceInitEvent) {
+
+		if (Config.getAppConfig().getJson().has("port")) {
+			SerialConnection.loadConnectionByName(Config.getAppConfig().getJson().get("port").getAsString());
+//			SerialConnection.test();
+		} else {
+			// TODO: Open settings page ig
+		}
+
 		SpringApplication.getShutdownHandlers().add(() -> {
 			Config.getDeviceConfig().markDirty();
 			Config.getAppConfig().markDirty();
